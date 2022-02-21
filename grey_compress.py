@@ -1,0 +1,255 @@
+import math
+BASE = 26
+
+fh = open('input_data/full.txt', 'r')
+FULL = [w.upper() for w in fh.read().split()]
+
+#FULL = ['BAR', 'BET', 'BAT', 'CAR', 'VAR', 'VAT', 'VET', 'HAT', 'KAT', 'CAP']
+#FULL = ['BAR']
+
+
+def gen_masks(word):
+    ret = []
+    for i in xrange(len(word)):
+        ret.append(word[:i] + '_' + word[i + 1:])
+    return ret
+
+class Graph(object):
+    next_id = 1
+    __slots__ = ('id', 'n', 'e')
+    def __init__(self):
+        self.n = set()
+        self.e = set()
+        self.id = Graph.next_id
+        Graph.next_id += 1
+
+    @classmethod
+    def merge(cls, graphs):
+        new = cls()
+        for graph in graphs:
+            new.n |= graph.n
+            new.e |= graph.e
+        return new
+
+    def __hash__(self):
+        return self.id
+
+    def __repr__(self):
+        nodes = ','.join(self.n)
+        edges = ','.join(x + '-' + y for x, y in self.e)
+        return 'N: ' + nodes + '\nE: ' + edges
+
+def gen_graphs(word_list):
+    graphs = set()
+    word_to_graph = {}
+    mask_to_words = {}
+
+    for i, word in enumerate(word_list):
+        masks = gen_masks(word)
+
+        to_join = set()
+        edges = set()
+        for mask in masks:
+            links = mask_to_words.get(mask, set())
+            for link in links:
+                edge = (link, word) if link < word else (word, link)
+                edges.add(edge)
+                to_join.add(word_to_graph[link])
+
+        graphs -= to_join
+        new_graph = Graph.merge(to_join)
+        new_graph.n.add(word)
+        new_graph.e |= edges
+
+        graphs.add(new_graph)
+
+        for node in new_graph.n:
+            word_to_graph[node] = new_graph
+
+        for mask in masks:
+            mask_to_words.setdefault(mask, set()).add(word)
+
+    return graphs
+
+
+
+def find_paths(graph):
+    if len(graph.n) == 1:
+        return [[list(graph.n)[0]]]
+
+    m = {}
+    for s, d in graph.e:
+        m.setdefault(s, set()).add(d)
+        m.setdefault(d, set()).add(s)
+
+    def pick_not_deadend(poss):
+        while True:
+            if not poss:
+                return None
+            next = poss.pop()
+            if next in m:
+                return next
+
+    def walk(ptr):
+        path = []
+        while True:
+            path.append(ptr)
+            if ptr in m:
+                poss = m.pop(ptr)
+                next = pick_not_deadend(poss)
+                if next is None:
+                    break
+                ptr = next
+            else:
+                break
+        return path
+
+    paths = []
+    while m:
+        start = min(m.keys())
+        #print "START", start
+        poss = m.pop(start)
+
+        forward = pick_not_deadend(poss)
+
+        path = [start]
+        if forward is not None:
+            for_path = walk(forward)
+            path = path + for_path
+
+        backward = pick_not_deadend(poss)
+        if backward is not None:
+            back_path = walk(backward)
+            path = list(reversed(back_path)) + path
+
+        if path[0] > path[-1]:
+            path = list(reversed(path))
+
+        paths.append(path)
+
+    return paths
+
+print '===== GENERATING GRAPHS ===='
+graphs = gen_graphs(FULL)
+print 'NUM GRAPHS:', len(graphs)
+
+print '===== GENERATING PATHS ====='
+
+check_count = 0
+all_paths = []
+for graph in graphs:
+    #print '+++++++++++'
+    #print len(graph.e)
+    #print graph
+    #print "PATHS"
+    paths = find_paths(graph)
+    for path in paths:
+        check_count += len(path)
+        #print path
+        #for w in path:
+        #    print w
+    all_paths.extend(paths)
+
+all_paths.sort()
+for path in all_paths:
+    print path
+
+assert len(FULL) == check_count
+print "NUM PATHS:", len(all_paths)
+
+
+def encode_word(word):
+    s = 0
+    for i, c in enumerate(word):
+        s = (s * BASE) + (ord(c) - ord('A'))
+
+    return s
+
+def encode_delta(d):
+    d-=1
+    stats[int(math.log(d + 1) / math.log(2))] += 1
+    assert d<0x80*0x80*0x80
+    if d < 0x80:
+        return chr(0x80 | d)
+    elif d < 0x80*0x80:
+        return chr(d & 0x7F) + chr(0x80 | (d>>7))
+    else:
+        return chr(d & 0x7F) + chr((d>>7) & 0x7F) + chr(d>>14)
+
+def get_diff_byte(a, b):
+    for i in xrange(len(a)):
+        if a[i] != b[i]:
+            return i * 25 + ((ord(b[i]) - ord(a[i]) + 26) % 26) - 1
+
+    assert False
+
+def encode_path(path):
+    buff = bytes()
+    for i in xrange(len(path) - 1):
+        b = get_diff_byte(path[i], path[i + 1])
+        if i == len(path) - 2:
+            b |= 0x80
+        buff += chr(b)
+    return buff
+
+
+singletons = [path for path in all_paths if len(path) == 1]
+full_paths = [path for path in all_paths if len(path) > 1]
+
+'''
+print '===== OPTIMIZING PATH ORDERING ====='
+
+tried = []
+for i in xrange(100):
+    prev = 0
+    max_delta = 0
+    max_pos = None
+    for idx, path in enumerate(full_paths):
+        v = encode_word(path[0])
+        delta = v - prev
+        prev = v
+        if delta > max_delta and path not in tried:
+            max_delta = delta
+            max_pos = idx
+
+    assert max_pos is not None
+    print "REV:", full_paths[max_pos]
+    tried.append(full_paths[max_pos])
+    tried = tried[-20:]
+    full_paths[max_pos] = list(reversed(full_paths[max_pos]))
+    full_paths.sort()
+'''
+
+print '===== GENERATING BYTES ====='
+single_stream = bytes()
+path_stream = bytes()
+path_steps = bytes()
+
+stats = [0 for i in xrange(30)]
+
+prev = 0
+for path in singletons:
+    v = encode_word(path[0])
+    delta = v - prev
+    prev = v
+
+    single_stream += encode_delta(delta)
+
+print stats
+stats = [0 for i in xrange(30)]
+
+prev = 0
+for path in full_paths:
+    v = encode_word(path[0])
+    delta = v - prev
+    prev = v
+
+    path_stream += encode_delta(delta)
+    path_steps += encode_path(path)
+print stats
+
+print "SINGLE STREAM LENGTH:", len(single_stream)
+print "  PATH STREAM LENGTH:", len(path_stream)
+print "   PATH STEPS LENGTH:", len(path_steps)
+print "        TOTAL LENGTH:", len(single_stream) + len(path_stream) + len(path_steps)
+

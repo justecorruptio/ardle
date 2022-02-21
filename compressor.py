@@ -1,11 +1,5 @@
+import math
 import struct
-
-LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-ALLOWABLE = 'AEIOUNRLBDCGHPTK'
-assert len(ALLOWABLE) <= 16
-
-fh = open('input_data/full.txt', 'r')
-
 
 PRE = 1
 POST = 5 - PRE
@@ -13,6 +7,11 @@ POST = 5 - PRE
 BASE = 32
 EXTRA = BASE - 26
 
+LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+ALLOWABLE = 'AEIOUNRLBDCGHPTK'
+assert len(ALLOWABLE) <= 16
+
+fh = open('input_data/full.txt', 'r')
 FULL = [w.upper() for w in fh.read().split()]
 FULL_SPLIT = {}
 for w in FULL:
@@ -119,8 +118,11 @@ def encode_suffix(suffix):
 
     return s
 
+stats = [0 for i in xrange(30)]
+
 def encode_delta(d):
     d-=1
+    stats[int(math.log(d + 1) / math.log(2))] += 1
     assert d<0x80*0x80*0x80
     if d < 0x80:
         return chr(0x80 | d)
@@ -153,3 +155,4 @@ for prefix in sorted(FULL_SPLIT.keys()):
     tot += len(stream)
 
 print "TOT", tot
+print "STATS", stats
