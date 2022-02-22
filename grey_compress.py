@@ -151,8 +151,8 @@ for graph in graphs:
     all_paths.extend(paths)
 
 all_paths.sort()
-for path in all_paths:
-    print path
+#for path in all_paths:
+#    print path
 
 assert len(FULL) == check_count
 print "NUM PATHS:", len(all_paths)
@@ -172,9 +172,9 @@ def encode_delta(d):
     if d < 0x80:
         return chr(0x80 | d)
     elif d < 0x80*0x80:
-        return chr(d & 0x7F) + chr(0x80 | (d>>7))
+        return chr(d >> 7) + chr(0x80 | (d & 0x7f))
     else:
-        return chr(d & 0x7F) + chr((d>>7) & 0x7F) + chr(d>>14)
+        return chr(d >> 14) + chr((d>>7) & 0x7F) + chr(0x80 | (d & 0x7f))
 
 def get_diff_byte(a, b):
     for i in xrange(len(a)):
@@ -235,7 +235,7 @@ for path in singletons:
 
     single_stream += encode_delta(delta)
 
-print stats
+#print stats
 stats = [0 for i in xrange(30)]
 
 prev = 0
@@ -246,10 +246,67 @@ for path in full_paths:
 
     path_stream += encode_delta(delta)
     path_steps += encode_path(path)
-print stats
+#print stats
 
 print "SINGLE STREAM LENGTH:", len(single_stream)
 print "  PATH STREAM LENGTH:", len(path_stream)
 print "   PATH STEPS LENGTH:", len(path_steps)
 print "        TOTAL LENGTH:", len(single_stream) + len(path_stream) + len(path_steps)
 
+print '===== VERIFYING BYTES ====='
+
+def decode_word(val):
+    w = ''
+    for i in xrange(5):
+        w = chr((val % BASE) + ord('A')) + w
+        val /= BASE
+
+    return w
+
+decoded_words = []
+
+val = 0
+i = 0
+while i < len(single_stream):
+    delta = 0
+    while True:
+        b = ord(single_stream[i])
+        i += 1
+        delta = (delta << 7) | (b & 0x7f)
+
+        if b & 0x80:
+            break
+
+    val += delta + 1
+    word = decode_word(val)
+    decoded_words.append(word)
+
+val = 0
+i = 0
+j = 0
+while i < len(path_stream):
+    delta = 0
+    while True:
+        b = ord(path_stream[i])
+        i += 1
+        delta = (delta << 7) | (b & 0x7f)
+
+        if b & 0x80:
+            break
+
+    val += delta + 1
+    word = decode_word(val)
+    decoded_words.append(word)
+    while True:
+        b = ord(path_steps[j])
+        j += 1
+        pos = (b & 0x7f) / 25
+        rot = ((b & 0x7f) % 25) + 1
+        c = chr((ord(word[pos]) - ord('A') + rot) % 26 + ord('A'))
+        word = word[:pos] + c + word[pos + 1:]
+        decoded_words.append(word)
+        if b & 0x80:
+            break
+
+assert sorted(decoded_words) == sorted(FULL)
+print "VERIFIED"
