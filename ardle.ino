@@ -12,18 +12,18 @@ void setup() {
 
 Words words;
 
-int i = 0;
 void loop() {
-    //if(!jay.nextFrame()) return;
+    if(!jay.nextFrame()) return;
 
     jay.pollButtons();
     jay.clear();
 
     //if(jay.justPressed(A_BUTTON))
-    if (words.phase != PHASE_END)
+    //if (words.phase != PHASE_END)
+    while (words.phase != PHASE_END)
         words.next();
 
-    jay.largePrint(10, (i++ % 8) * 8, words.buff, 1);
+    jay.largePrint(10, 30, words.buff, 1);
 
     jay.display();
 }

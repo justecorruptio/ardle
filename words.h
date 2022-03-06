@@ -17,5 +17,8 @@ class Words {
 
     Words();
     uint8_t next();
+
+    private:
     void decodeWord();
+    void walkStream(char* ptr);
 };
