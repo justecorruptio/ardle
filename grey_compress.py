@@ -89,6 +89,7 @@ def find_paths(graph):
         while True:
             if not poss:
                 return None
+            # hack so that GNOME doesn't exceed max asnswer step
             if 'GLOVE' in poss:
                 next = 'GLOVE'
                 poss.remove('GLOVE')
@@ -359,16 +360,87 @@ for word in decoded_words:
         continue
     if step > max_step:
         max_step = step
-    if step > 64:
+    if step >= 64:
         print "PROBLEM:", word
         assert False
-    answer_stream += encode_delta(step)
+    answer_stream += chr(step)
     step = 0
+
+while len(answer_stream) % 4:
+    answer_stream += '\0'
+
+packed_answer_stream = bytes()
+for i in xrange(0, len(answer_stream), 4):
+    a, b, c, d = map(ord, answer_stream[i: i + 4])
+    x = (a & 0x3f) | ((b & 0x03) << 6)
+    y = ((b & 0x3c) >> 2) | ((c & 0x0f) << 4)
+    z = ((c & 0x30) >> 4) | ((d & 0x3f) << 2)
+    packed_answer_stream += chr(x) + chr(y) + chr(z)
 
 print "            MAX STEP:", max_step
 print "      ANSWERS LENGTH:", len(answer_stream)
+print "   PACKED ANS LENGTH:", len(packed_answer_stream)
 
+print '===== VALIDATING ANSWERS ==='
+
+decoded_steps = []
+i = 0
+while i < len(packed_answer_stream):
+    x, y, z = map(ord, packed_answer_stream[i: i + 3])
+    a = x & 0x3f
+    b = ((x & 0xc0) >> 6) | ((y & 0x0f) << 2)
+    c = ((y & 0xf0) >> 4) | ((z & 0x03) << 4)
+    d = (z & 0xfc) >> 2
+    decoded_steps.extend([a, b, c, d])
+    i += 3
+
+decoded_answers = []
+step = decoded_steps.pop(0)
+for word in decoded_words:
+    step -= 1
+    if step:
+        continue
+
+    decoded_answers.append(word)
+    step = decoded_steps.pop(0)
+
+assert sorted(decoded_answers) == sorted(ANSWERS)
 
 print '===== GENERATING OUTPUT ===='
 
-#fh = open('crompresssed_data.h', 'w')
+fh = open('generated_data/compresssed_data.h', 'w')
+
+def format_bytes(stream):
+    output = ''
+    for i, c in enumerate(stream):
+        output += '0x%02x,' % (ord(c),)
+        if i % 12 == 11:
+            output += '\n'
+        else:
+            output += ' '
+
+    return output
+
+output = ''
+
+output += '#ifndef COMPRESSED_DATA_H\n'
+output += '#define COMPRESSED_DATA_H\n'
+
+output += 'PROGMEM const uint8_t SINGLE_STREAM [] = {\n'
+output += format_bytes(single_stream)
+output += '};\n'
+
+output += 'PROGMEM const uint8_t PATH_STREAM [] = {\n'
+output += format_bytes(path_stream)
+output += '};\n'
+
+output += 'PROGMEM const uint8_t PATH_STEPS [] = {\n'
+output += format_bytes(path_steps)
+output += '};\n'
+
+output += '#define SINGLE_STREAM_LENGTH %d' % (len(single_stream),)
+output += '#define PATH_STREAM_LENGTH %d' % (len(path_stream),)
+
+output += '#endif\n'
+fh.write(output)
+fh.close()
