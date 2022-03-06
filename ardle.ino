@@ -22,8 +22,8 @@ void loop() {
     //if (words.phase != PHASE_END)
     while (words.phase != PHASE_END) {
         words.next();
-        if(words.answerSteps == 0)
-            break;
+        //if(words.answerSteps == 0)
+        //    break;
     }
 
     jay.largePrint(10, 30, words.buff, 1);
