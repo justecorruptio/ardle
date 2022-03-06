@@ -12,20 +12,3 @@ char * itoa(int16_t x) {
     // Must immediately use this.
     return itoa_buf + i + 1;
 }
-
-char subset_buf[8];
-uint8_t is_subset(char * a, char * b) {
-    char *i, *j;
-    strcpy(subset_buf, b);
-    for(i = a; *i; i ++) {
-        for(j = subset_buf; *j; j++) {
-            if (*j == *i) {
-                *j = ' ';
-                goto found;
-            }
-        }
-        return 0;
-        found: ;
-    }
-    return 1;
-}

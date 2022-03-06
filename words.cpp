@@ -45,15 +45,11 @@ uint8_t Words::next() {
     } else if(phase == PHASE_STEP) {
         uint8_t b = pgm_read_byte(PATH_STEPS + pathIdx++);
 
-        //uint8_t pos = (b & 0x7f) / 25;
-        //uint8_t rot = ((b & 0x7f) % 25);
         uint8_t rot = b & 0x7f, pos = 0;
         while(rot >= 25) rot -=25, pos ++;
 
         buff[pos] += rot + 1; if(buff[pos] > 'Z') buff[pos] -= 26;
-        if(b & 0x80) {
-            if(idx >= PATH_STREAM_LENGTH) phase = PHASE_END;
-            else phase = PHASE_PATH;
-        }
+        if(b & 0x80)
+            phase = idx >= PATH_STREAM_LENGTH ? PHASE_END : PHASE_PATH;
     }
 }
