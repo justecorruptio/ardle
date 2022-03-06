@@ -1,5 +1,5 @@
 import math
-BASE = 26
+BASE = 32
 
 fh = open('input_data/full.txt', 'r')
 FULL = [w.upper() for w in fh.read().split()]
@@ -86,7 +86,11 @@ def find_paths(graph):
         while True:
             if not poss:
                 return None
-            next = poss.pop()
+            if 'GLOVE' in poss and False:
+                next = 'GLOVE'
+                poss.remove('GLOVE')
+            else:
+                next = poss.pop()
             if next in m:
                 return next
 
@@ -196,29 +200,8 @@ def encode_path(path):
 singletons = [path for path in all_paths if len(path) == 1]
 full_paths = [path for path in all_paths if len(path) > 1]
 
-'''
 print '===== OPTIMIZING PATH ORDERING ====='
-
-tried = []
-for i in xrange(100):
-    prev = 0
-    max_delta = 0
-    max_pos = None
-    for idx, path in enumerate(full_paths):
-        v = encode_word(path[0])
-        delta = v - prev
-        prev = v
-        if delta > max_delta and path not in tried:
-            max_delta = delta
-            max_pos = idx
-
-    assert max_pos is not None
-    print "REV:", full_paths[max_pos]
-    tried.append(full_paths[max_pos])
-    tried = tried[-20:]
-    full_paths[max_pos] = list(reversed(full_paths[max_pos]))
-    full_paths.sort()
-'''
+print "      NUM FULL PATHS:", len(full_paths)
 
 print '===== GENERATING BYTES ====='
 single_stream = bytes()
@@ -308,5 +291,36 @@ while i < len(path_stream):
         if b & 0x80:
             break
 
+#for w in decoded_words:
+#    print w
 assert sorted(decoded_words) == sorted(FULL)
-print "VERIFIED"
+
+print '===== LOADING ANSWERS ======'
+
+fh = open('input_data/answers.txt', 'r')
+ANSWERS = [w.upper() for w in fh.read().split()]
+ANSWER_SET = set(ANSWERS)
+
+answer_stream = bytes()
+
+max_step = 0
+step = 0
+for word in decoded_words:
+    step += 1
+    if word not in ANSWER_SET:
+        continue
+    if step > max_step:
+        max_step = step
+    if step > 64:
+        print "PROBLEM:", word
+        assert False
+    answer_stream += encode_delta(step)
+    step = 0
+
+print "            MAX STEP:", max_step
+print "      ANSWERS LENGTH:", len(answer_stream)
+
+
+print '===== GENERATING OUTPUT ===='
+
+#fh = open('crompresssed_data.h', 'w')
