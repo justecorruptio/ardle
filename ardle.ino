@@ -1,5 +1,5 @@
 #include "jaylib.h"
-#include "generated_data/compresssed_data.h"
+#include "words.h"
 
 Jaylib jay;
 
@@ -9,6 +9,8 @@ void setup() {
     jay.clear();
 
 }
+
+Words words;
 
 void loop() {
     if(!jay.nextFrame()) return;
@@ -21,6 +23,10 @@ void loop() {
     pgm_read_byte(PATH_STREAM);
     pgm_read_byte(PATH_STEPS);
     pgm_read_byte(ANSWER_STREAM);
+
+    if(jay.justPressed(A_BUTTON)) words.next();
+
+    jay.largePrint(10, 30, words.buff, 1);
 
     jay.display();
 }
