@@ -401,6 +401,7 @@ for word in decoded_words:
     if step:
         continue
 
+    print word
     decoded_answers.append(word)
     step = decoded_steps.pop(0)
 

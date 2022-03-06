@@ -2,12 +2,12 @@
 #include "generated_data/compresssed_data.h"
 
 Words::Words() {
-    phase = 1;
+    phase = 0;
     idx = 0;
     pathIdx = 0;
     value = 0;
     buff[5] = '\0';
-    isAnswer = 0;
+    answerSteps = 0;
 }
 
 void Words::decodeWord() {
@@ -28,6 +28,26 @@ void Words::walkStream(char* ptr) {
 
 uint8_t Words::next() {
     uint8_t b;
+    if(answerSteps == 0) {
+        /*
+        x, y, z = map(ord, packed_answer_stream[i: i + 3])
+        a = x & 0x3f
+        b = ((x & 0xc0) >> 6) | ((y & 0x0f) << 2)
+        c = ((y & 0xf0) >> 4) | ((z & 0x03) << 4)
+        d = (z & 0xfc) >> 2
+        */
+        uint8_t x = pgm_read_byte(ANSWER_STREAM + (answerIdx / 4 * 3) + 0);
+        uint8_t y = pgm_read_byte(ANSWER_STREAM + (answerIdx / 4 * 3) + 1);
+        uint8_t z = pgm_read_byte(ANSWER_STREAM + (answerIdx / 4 * 3) + 2);
+        switch(answerIdx % 4) {
+        case 0: answerSteps = x & 0x3f; break;
+        case 1: answerSteps = ((x & 0xc0) >> 6) | ((y & 0x0f) << 2); break;
+        case 2: answerSteps = ((y & 0xf0) >> 4) | ((z & 0x03) << 4); break;
+        case 3: answerSteps = (z & 0xfc) >> 2; break;
+        }
+        answerIdx ++;
+    }
+    answerSteps --;
     if(phase == PHASE_SINGLE) {
         walkStream(SINGLE_STREAM);
         if(idx >= SINGLE_STREAM_LENGTH)

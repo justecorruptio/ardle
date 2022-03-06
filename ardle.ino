@@ -3,14 +3,14 @@
 
 Jaylib jay;
 
+Words words;
+
 void setup() {
     jay.boot();
     jay.invert(1);
     jay.clear();
-
 }
 
-Words words;
 
 void loop() {
     if(!jay.nextFrame()) return;
@@ -18,10 +18,13 @@ void loop() {
     jay.pollButtons();
     jay.clear();
 
-    //if(jay.justPressed(A_BUTTON))
+    if(jay.justPressed(A_BUTTON))
     //if (words.phase != PHASE_END)
-    while (words.phase != PHASE_END)
+    while (words.phase != PHASE_END) {
         words.next();
+        if(words.answerSteps == 0)
+            break;
+    }
 
     jay.largePrint(10, 30, words.buff, 1);
 

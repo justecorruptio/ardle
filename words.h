@@ -13,7 +13,9 @@ class Words {
     uint16_t pathIdx;
     uint64_t value;
     uint8_t buff[6];
-    uint8_t isAnswer;
+
+    uint8_t answerIdx;
+    uint8_t answerSteps;
 
     Words();
     uint8_t next();
