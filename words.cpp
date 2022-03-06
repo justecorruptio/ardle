@@ -29,15 +29,8 @@ void Words::walkStream(char* ptr) {
 
 uint8_t Words::next() {
     if(answerSteps == 0) {
-        uint8_t x = pgm_read_byte(ANSWER_STREAM + (answerIdx / 4 * 3) + 0);
-        uint8_t y = pgm_read_byte(ANSWER_STREAM + (answerIdx / 4 * 3) + 1);
-        uint8_t z = pgm_read_byte(ANSWER_STREAM + (answerIdx / 4 * 3) + 2);
-        switch(answerIdx % 4) {
-        case 0: answerSteps = x & 0x3f; break;
-        case 1: answerSteps = ((x & 0xc0) >> 6) | ((y & 0x0f) << 2); break;
-        case 2: answerSteps = ((y & 0xf0) >> 4) | ((z & 0x03) << 4); break;
-        case 3: answerSteps = (z & 0xfc) >> 2; break;
-        }
+        uint32_t v = pgm_read_dword(ANSWER_STREAM + (answerIdx / 4 * 3));
+        answerSteps = (v >> ((answerIdx % 4) * 6)) & 0x3f;
         answerIdx ++;
     }
     answerSteps --;

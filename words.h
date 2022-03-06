@@ -1,4 +1,5 @@
 #pragma once
+#include "utils.h"
 #include "jaylib.h"
 
 #define PHASE_SINGLE 0
