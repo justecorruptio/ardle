@@ -11,7 +11,7 @@ class Words {
     uint8_t phase;
     uint16_t idx;
     uint16_t pathIdx;
-    uint64_t value;
+    uint32_t value;
     uint8_t buff[6];
 
     uint8_t answerIdx;

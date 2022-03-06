@@ -17,7 +17,7 @@ void Words::decodeWord() {
 }
 
 void Words::walkStream(char* ptr) {
-    uint64_t delta = 0;
+    uint32_t delta = 0;
     uint8_t b;
     do {
         b = pgm_read_byte(ptr + idx++);
