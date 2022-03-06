@@ -27,6 +27,12 @@ void loop() {
 
     jay.largePrint(10, 30, words.buff, 1);
 
+    jay.largePrint(1, 1, "ABCDEFGHIJ", 1);
+    jay.largePrint(1, 9, "KLMNOPQRST", 1);
+    jay.largePrint(1, 17,"UVWXYZ", 1);
+    jay.largePrint(1, 25,"01234", 1);
+    jay.largePrint(1, 33,"56789:", 1);
+
     jay.display();
 }
 

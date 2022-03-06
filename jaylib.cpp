@@ -25,8 +25,9 @@ void Jaylib::smallPrint(uint8_t x, uint8_t y, const uint8_t * str) {
 void Jaylib::largePrint(uint8_t x, uint8_t y, const uint8_t * str, uint8_t kern) {
     char c;
     for(;c = *str ++;) {
-        c &= 0x1F; // Lucky that SPACE % 32 == 0
-        drawBand(x, y, PRINTABLE_CHARS_LARGE + 5 * c, 5);
+        //c &= 0x1F; // Lucky that SPACE % 32 == 0
+        c -= 32;
+        drawBand(128 - y - 7, x, HORIZ_LARGE_CHARS + 7 * c, 7);
         x += 5 + kern;
     }
 }
