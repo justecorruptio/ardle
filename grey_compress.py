@@ -414,7 +414,7 @@ def format_bytes(stream):
     output = ''
     for i, c in enumerate(stream):
         output += '0x%02x,' % (ord(c),)
-        if i % 12 == 11:
+        if i % 16 == 15:
             output += '\n'
         else:
             output += ' '
@@ -428,18 +428,23 @@ output += '#define COMPRESSED_DATA_H\n'
 
 output += 'PROGMEM const uint8_t SINGLE_STREAM [] = {\n'
 output += format_bytes(single_stream)
-output += '};\n'
+output += '};\n\n'
 
 output += 'PROGMEM const uint8_t PATH_STREAM [] = {\n'
 output += format_bytes(path_stream)
-output += '};\n'
+output += '};\n\n'
 
 output += 'PROGMEM const uint8_t PATH_STEPS [] = {\n'
 output += format_bytes(path_steps)
-output += '};\n'
+output += '};\n\n'
 
-output += '#define SINGLE_STREAM_LENGTH %d' % (len(single_stream),)
-output += '#define PATH_STREAM_LENGTH %d' % (len(path_stream),)
+output += 'PROGMEM const uint8_t ANSWER_STREAM [] = {\n'
+output += format_bytes(packed_answer_stream)
+output += '};\n\n'
+
+output += '#define SINGLE_STREAM_LENGTH %d\n' % (len(single_stream),)
+output += '#define PATH_STREAM_LENGTH %d\n' % (len(path_stream),)
+output += '#define ANSWER_STREAM_LENGTH %d\n' % (len(packed_answer_stream),)
 
 output += '#endif\n'
 fh.write(output)
