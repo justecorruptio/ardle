@@ -12,21 +12,18 @@ void setup() {
 
 Words words;
 
+int i = 0;
 void loop() {
-    if(!jay.nextFrame()) return;
+    //if(!jay.nextFrame()) return;
 
     jay.pollButtons();
     jay.clear();
 
-    jay.largePrint(10, 10, "HELLO WORLD", 1);
-    pgm_read_byte(SINGLE_STREAM);
-    pgm_read_byte(PATH_STREAM);
-    pgm_read_byte(PATH_STEPS);
-    pgm_read_byte(ANSWER_STREAM);
+    //if(jay.justPressed(A_BUTTON))
+    if (words.phase != PHASE_END)
+        words.next();
 
-    if(jay.justPressed(A_BUTTON)) words.next();
-
-    jay.largePrint(10, 30, words.buff, 1);
+    jay.largePrint(10, (i++ % 8) * 8, words.buff, 1);
 
     jay.display();
 }
