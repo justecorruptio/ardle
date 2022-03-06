@@ -1,4 +1,7 @@
 import math
+import random
+random.seed(0)
+
 BASE = 32
 
 fh = open('input_data/full.txt', 'r')
@@ -86,7 +89,7 @@ def find_paths(graph):
         while True:
             if not poss:
                 return None
-            if 'GLOVE' in poss and False:
+            if 'GLOVE' in poss:
                 next = 'GLOVE'
                 poss.remove('GLOVE')
             else:
@@ -202,6 +205,51 @@ full_paths = [path for path in all_paths if len(path) > 1]
 
 print '===== OPTIMIZING PATH ORDERING ====='
 print "      NUM FULL PATHS:", len(full_paths)
+
+ordering = [0 for i in xrange(len(full_paths))]
+terminals = []
+
+for path in full_paths:
+    assert path[0] != path[-1]
+    terminals.append((encode_word(path[0]), encode_word(path[-1])))
+
+def score_terminals(ordering, terminals):
+    prev = 0
+    score = 0
+    values = []
+    for i in xrange(len(ordering)):
+        values.append(terminals[i][ordering[i]])
+
+    values.sort()
+    for v in values:
+        d = v - prev
+        prev = v
+        score += (d >= 0x80) + (d >= 0x80*0x80) + 1 + 9999 * (d >= 0x80 * 0x80 * 0x80)
+    return score
+
+begin_score = score = score_terminals(ordering, terminals)
+
+for n in xrange(10000):
+    trial = ordering[:]
+    flip = random.randint(0, len(ordering) - 1)
+    trial[flip] ^= -1
+
+    trial_score = score_terminals(trial, terminals)
+    if trial_score < score:
+        #print " TEMP SCORE:", trial_score
+        ordering = trial
+        score = trial_score
+
+#print "FINAL SCORE:", score_terminals(ordering, terminals)
+
+for i, order in enumerate(ordering):
+    if order == -1:
+        full_paths[i] = list(reversed(full_paths[i]))
+
+full_paths.sort()
+
+print "     BYTES OPTIMIZED:", begin_score - score
+
 
 print '===== GENERATING BYTES ====='
 single_stream = bytes()
