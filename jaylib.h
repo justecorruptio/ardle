@@ -9,14 +9,13 @@
 
 class Jaylib: public Arduboy2Base {
     public:
-    void drawBand(uint8_t x, uint8_t y, const uint8_t * sprite, uint8_t cols);
+    void drawBand(uint8_t x, uint8_t y, const uint8_t * sprite, uint8_t cols, uint8_t color = 1);
 
     void smallPrint(uint8_t x, uint8_t y, const uint8_t * str);
-    void largePrint(uint8_t x, uint8_t y, const uint8_t * str, uint8_t kern = 1);
-    void largeHorizPrint(uint8_t x, uint8_t y, const uint8_t * str, uint8_t kern = 1);
+    void largePrint(uint8_t x, uint8_t y, const uint8_t * str, uint8_t kern = 1, uint8_t color = 1);
 
-    void drawFastVLine(uint8_t x, uint8_t y, uint8_t h);
-    void drawFastHLine(uint8_t x, uint8_t y, uint8_t w);
+    void drawFastVLine(uint8_t x, uint8_t y, uint8_t h, uint8_t color = 1);
+    void drawFastHLine(uint8_t x, uint8_t y, uint8_t w, uint8_t color = 1);
 };
 
 #endif
