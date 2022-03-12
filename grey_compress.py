@@ -4,8 +4,14 @@ random.seed(0)
 
 BASE = 32
 
-fh = open('input_data/full.txt', 'r')
-FULL = [w.upper() for w in fh.read().split()]
+fh = open('input_data/en.txt', 'r')
+FULL_SET = set([w.upper() for w in fh.read().split()])
+
+fh = open('input_data/fr.txt', 'r')
+FULL_SET.update(set([w.upper() for w in fh.read().split()]))
+
+FULL = list(sorted(list(FULL_SET)))
+print "NUM WORDS:", len(FULL)
 
 #FULL = ['BAR', 'BET', 'BAT', 'CAR', 'VAR', 'VAT', 'VET', 'HAT', 'KAT', 'CAP']
 #FULL = ['BAR']
@@ -230,7 +236,7 @@ def score_terminals(ordering, terminals):
 
 begin_score = score = score_terminals(ordering, terminals)
 
-for n in xrange(10000):
+for n in xrange(50000):
     trial = ordering[:]
     flip = random.randint(0, len(ordering) - 1)
     trial[flip] ^= -1
@@ -346,7 +352,7 @@ assert sorted(decoded_words) == sorted(FULL)
 
 print '===== LOADING ANSWERS ======'
 
-fh = open('input_data/answers.txt', 'r')
+fh = open('input_data/en-answers.txt', 'r')
 ANSWERS = [w.upper() for w in fh.read().split()]
 ANSWER_SET = set(ANSWERS)
 
