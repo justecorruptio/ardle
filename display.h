@@ -8,7 +8,6 @@
 #define STYLE_GREEN 3
 
 
-
 class Display {
 
     public:
