@@ -19,12 +19,12 @@ void Jaylib::drawBand(uint8_t x, uint8_t y, const uint8_t * sprite, uint8_t cols
     }
 }
 
-void Jaylib::smallPrint(uint8_t x, uint8_t y, const uint8_t * str) {
+void Jaylib::smallPrint(uint8_t x, uint8_t y, const uint8_t * str, uint8_t color) {
     char c;
     for(;c = *str ++;) {
-        c -= 32;
-        drawBand(x, y, PRINTABLE_CHARS + 3 * c, 3);
-        x += 4;
+        c -= 65;
+        drawBand(128 - y - 5, x, HORIZ_SMALL_CHARS + 5 * c, 5, color);
+        x += 6;
     }
 }
 
@@ -38,15 +38,11 @@ void Jaylib::largePrint(uint8_t x, uint8_t y, const uint8_t * str, uint8_t color
 }
 
 void Jaylib::drawFastVLine(uint8_t x, uint8_t y, uint8_t h, uint8_t color) {
-    uint8_t i;
-    for(i = h; i --;)
-        drawPixel(127 - y - i, x, color);
+    for(uint8_t i = h; i --;) drawPixel(127 - y - i, x, color);
 }
 
 void Jaylib::drawFastHLine(uint8_t x, uint8_t y, uint8_t w, uint8_t color) {
-    uint8_t i;
-    for(i = w; i --;)
-        drawPixel(127 - y, x + i, color);
+    for(uint8_t i = w; i --;) drawPixel(127 - y, x + i, color);
 }
 
 void Jaylib::drawPixel(int16_t x, int16_t y, uint8_t color) {

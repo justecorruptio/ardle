@@ -19,10 +19,11 @@ void loop() {
     jay.clear();
 
 
-    if(jay.justPressed(A_BUTTON))
+    if(jay.justReleased(A_BUTTON))
     while (words.phase != PHASE_END) {
         words.next();
-        //if(words.flags == 5) break;
+        if(words.flags & 4) break;
+        //break;
     }
 
     jay.largePrint(10, 100, words.buff);
@@ -34,6 +35,9 @@ void loop() {
     jay.largePrint(1, 25,"01234", 1);
     jay.largePrint(1, 33,"56789:", 1);
     */
+    jay.smallPrint(3, 105, "QWERTYUIOP", 1);
+    jay.smallPrint(6, 113, "ASDFGHJKL", 1);
+    jay.smallPrint(9, 121,"ZXCVBNM[", 1);
 
 
     for(uint8_t i= 0; i < 6; i++) {

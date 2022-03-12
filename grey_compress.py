@@ -6,10 +6,10 @@ random.seed(0)
 BASE = 32
 
 fh = open('input_data/en.txt', 'r')
-EN_FULL = set([w.upper() for w in fh.read().split()])
+EN_FULL = set([w.upper() for w in fh.read().split()][:])
 
 fh = open('input_data/fr.txt', 'r')
-FR_FULL = set([w.upper() for w in fh.read().split()])
+FR_FULL = set([w.upper() for w in fh.read().split()][:])
 
 FULL = list(sorted(list(EN_FULL | FR_FULL)))
 print "NUM WORDS:", len(FULL)
