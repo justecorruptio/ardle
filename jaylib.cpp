@@ -27,12 +27,12 @@ void Jaylib::smallPrint(uint8_t x, uint8_t y, const uint8_t * str) {
     }
 }
 
-void Jaylib::largePrint(uint8_t x, uint8_t y, const uint8_t * str, uint8_t kern, uint8_t color) {
+void Jaylib::largePrint(uint8_t x, uint8_t y, const uint8_t * str, uint8_t color) {
     char c;
     for(;c = *str ++;) {
-        c -= 32;
+        c -= 48;
         drawBand(128 - y - 7, x, HORIZ_LARGE_CHARS + 7 * c, 7, color);
-        x += 5 + kern;
+        x += 6;
     }
 }
 

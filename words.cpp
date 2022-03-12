@@ -11,11 +11,6 @@ Words::Words() {
     flags = 0;
 }
 
-void Words::decodeWord() {
-    for(uint8_t i = 0; i < 5; i++)
-        buff[4 - i] = ((value >> (i * 5)) & 0x1f) + 'A';
-}
-
 void Words::walkStream(char* ptr) {
     uint32_t delta = 0;
     uint8_t b;
@@ -23,19 +18,13 @@ void Words::walkStream(char* ptr) {
         b = pgm_read_byte(ptr + idx++);
         delta = (delta << 7) | (b & 0x7f);
     } while ((b & 0x80) == 0);
-    value += delta + 1;
-    decodeWord();
+    value += delta;
+
+    for(uint8_t i = 0; i < 5; i++)
+        buff[4 - i] = ((value >> (i * 5)) & 0x1f) + 'A';
 }
 
 uint8_t Words::next() {
-    /*
-    if(answerSteps == 0) {
-        uint32_t v = pgm_read_dword(ANSWER_STREAM + (answerIdx / 4 * 3));
-        answerSteps = (v >> ((answerIdx % 4) * 6)) & 0x3f;
-        answerIdx ++;
-    }
-    answerSteps --;
-    */
     uint32_t v = pgm_read_dword(FLAGS_STREAM + (counter / 8 * 3));
     flags = (v >> ((counter % 8) * 3)) & 0x7;
 

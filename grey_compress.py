@@ -176,7 +176,6 @@ def encode_word(word):
     return s
 
 def encode_delta(d):
-    d-=1
     stats[int(math.log(d + 1) / math.log(2))] += 1
     assert d<0x80*0x80*0x80
     if d < 0x80:
@@ -311,7 +310,7 @@ while i < len(single_stream):
         if b & 0x80:
             break
 
-    val += delta + 1
+    val += delta
     word = decode_word(val)
     decoded_words.append(word)
 
@@ -328,7 +327,7 @@ while i < len(path_stream):
         if b & 0x80:
             break
 
-    val += delta + 1
+    val += delta
     word = decode_word(val)
     decoded_words.append(word)
     while True:
