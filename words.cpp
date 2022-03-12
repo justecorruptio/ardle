@@ -7,8 +7,8 @@ Words::Words() {
     pathIdx = 0;
     value = 0;
     buff[5] = '\0';
-    answerIdx = 0;
-    answerSteps = 0;
+    counter = 0;
+    flags = 0;
 }
 
 void Words::decodeWord() {
@@ -28,12 +28,16 @@ void Words::walkStream(char* ptr) {
 }
 
 uint8_t Words::next() {
+    /*
     if(answerSteps == 0) {
         uint32_t v = pgm_read_dword(ANSWER_STREAM + (answerIdx / 4 * 3));
         answerSteps = (v >> ((answerIdx % 4) * 6)) & 0x3f;
         answerIdx ++;
     }
     answerSteps --;
+    */
+    uint32_t v = pgm_read_dword(FLAGS_STREAM + (counter / 8 * 3));
+    flags = (v >> ((counter % 8) * 3)) & 0x7;
 
     if(phase == PHASE_SINGLE) {
         walkStream(SINGLE_STREAM);
@@ -52,4 +56,6 @@ uint8_t Words::next() {
         if(b & 0x80)
             phase = idx >= PATH_STREAM_LENGTH ? PHASE_END : PHASE_PATH;
     }
+
+    counter += 1;
 }

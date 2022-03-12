@@ -1,16 +1,17 @@
 import math
 import random
+import struct
 random.seed(0)
 
 BASE = 32
 
 fh = open('input_data/en.txt', 'r')
-FULL_SET = set([w.upper() for w in fh.read().split()])
+EN_FULL = set([w.upper() for w in fh.read().split()])
 
 fh = open('input_data/fr.txt', 'r')
-FULL_SET.update(set([w.upper() for w in fh.read().split()]))
+FR_FULL = set([w.upper() for w in fh.read().split()])
 
-FULL = list(sorted(list(FULL_SET)))
+FULL = list(sorted(list(EN_FULL | FR_FULL)))
 print "NUM WORDS:", len(FULL)
 
 #FULL = ['BAR', 'BET', 'BAT', 'CAR', 'VAR', 'VAT', 'VET', 'HAT', 'KAT', 'CAP']
@@ -95,12 +96,7 @@ def find_paths(graph):
         while True:
             if not poss:
                 return None
-            # hack so that GNOME doesn't exceed max asnswer step
-            if 'GLOVE' in poss:
-                next = 'GLOVE'
-                poss.remove('GLOVE')
-            else:
-                next = poss.pop()
+            next = poss.pop()
             if next in m:
                 return next
 
@@ -353,64 +349,60 @@ assert sorted(decoded_words) == sorted(FULL)
 print '===== LOADING ANSWERS ======'
 
 fh = open('input_data/en-answers.txt', 'r')
-ANSWERS = [w.upper() for w in fh.read().split()]
-ANSWER_SET = set(ANSWERS)
+EN_ANSWERS = set([w.upper() for w in fh.read().split()]) & EN_FULL
 
-answer_stream = bytes()
+fh = open('input_data/fr-answers.txt', 'r')
+FR_ANSWERS = set([w.upper() for w in fh.read().split()]) & FR_FULL
 
-max_step = 0
-step = 0
+ANSWER_SET = set()
+for ans in list(EN_ANSWERS | FR_ANSWERS):
+    ans_val = ((ans in EN_ANSWERS) << 1) | (ans in FR_ANSWERS)
+    full_val = ((ans in EN_FULL) << 1) | (ans in FR_FULL)
+    if ans_val == full_val:
+        ANSWER_SET.add(ans)
+
+ANSWERS = list(sorted(list(ANSWER_SET)))
+
+unpacked = []
+
 for word in decoded_words:
-    step += 1
-    if word not in ANSWER_SET:
-        continue
-    if step > max_step:
-        max_step = step
-    if step >= 64:
-        print "PROBLEM:", word
-        assert False
-    answer_stream += chr(step)
-    step = 0
+    unpacked.append( ((word in EN_FULL) << 2) | ((word in FR_FULL) << 1) | (word in ANSWER_SET) )
 
-while len(answer_stream) % 4:
-    answer_stream += '\0'
+while len(unpacked) % 8:
+    unpacked += [0]
 
-packed_answer_stream = bytes()
-for i in xrange(0, len(answer_stream), 4):
-    a, b, c, d = map(ord, answer_stream[i: i + 4])
-    x = (a & 0x3f) | ((b & 0x03) << 6)
-    y = ((b & 0x3c) >> 2) | ((c & 0x0f) << 4)
-    z = ((c & 0x30) >> 4) | ((d & 0x3f) << 2)
-    packed_answer_stream += chr(x) + chr(y) + chr(z)
+flags_stream = bytes()
+x = 0
+for i, v in enumerate(unpacked):
+    assert v <= 0x7
+    x |= v << ((i % 8) * 3)
+    assert x <= 0xffffff
+    if i % 8 == 7:
+        flags_stream += struct.pack("<i", x)[:3]
+        x = 0
 
-print "            MAX STEP:", max_step
-print "      ANSWERS LENGTH:", len(answer_stream)
-print "   PACKED ANS LENGTH:", len(packed_answer_stream)
+print "         NUM ANSWERS:", len(ANSWERS)
+print " PACKED FLAGS LENGTH:", len(flags_stream)
 
-print '===== VALIDATING ANSWERS ==='
+print '===== VALIDATING FLAGS ==='
 
-decoded_steps = []
-i = 0
-while i < len(packed_answer_stream):
-    x, y, z = map(ord, packed_answer_stream[i: i + 3])
-    a = x & 0x3f
-    b = ((x & 0xc0) >> 6) | ((y & 0x0f) << 2)
-    c = ((y & 0xf0) >> 4) | ((z & 0x03) << 4)
-    d = (z & 0xfc) >> 2
-    decoded_steps.extend([a, b, c, d])
-    i += 3
+decoded_en = []
+decoded_fr = []
+decoded_ans = []
 
-decoded_answers = []
-step = decoded_steps.pop(0)
-for word in decoded_words:
-    step -= 1
-    if step:
-        continue
+for i, word in enumerate(decoded_words):
+    (val,) = struct.unpack("<i", flags_stream[i / 8 * 3: i / 8 * 3 + 3] + '\0')
+    flags = (val >> ((i % 8) * 3)) & 0x7
+    if flags & 0x4:
+        decoded_en.append(word)
+    if flags & 0x2:
+        decoded_fr.append(word)
+    if flags & 0x1:
+        decoded_ans.append(word)
 
-    decoded_answers.append(word)
-    step = decoded_steps.pop(0)
-
-assert sorted(decoded_answers) == sorted(ANSWERS)
+assert sorted(decoded_en) == sorted(EN_FULL)
+assert sorted(decoded_fr) == sorted(FR_FULL)
+assert sorted(decoded_ans) == sorted(ANSWERS)
 
 print '===== GENERATING OUTPUT ===='
 
@@ -444,13 +436,13 @@ output += 'PROGMEM const uint8_t PATH_STEPS [] = {\n'
 output += format_bytes(path_steps)
 output += '};\n\n'
 
-output += 'PROGMEM const uint8_t ANSWER_STREAM [] = {\n'
-output += format_bytes(packed_answer_stream)
+output += 'PROGMEM const uint8_t FLAGS_STREAM [] = {\n'
+output += format_bytes(flags_stream)
 output += '};\n\n'
 
 output += '#define SINGLE_STREAM_LENGTH %d\n' % (len(single_stream),)
 output += '#define PATH_STREAM_LENGTH %d\n' % (len(path_stream),)
-output += '#define ANSWER_STREAM_LENGTH %d\n' % (len(packed_answer_stream),)
+output += '#define FLAGS_STREAM_LENGTH %d\n' % (len(flags_stream),)
 
 output += '#endif\n'
 fh.write(output)

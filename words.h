@@ -15,8 +15,8 @@ class Words {
     uint32_t value;
     uint8_t buff[6];
 
-    uint16_t answerIdx;
-    uint8_t answerSteps;
+    uint16_t counter;
+    uint8_t flags;
 
     Words();
     uint8_t next();
