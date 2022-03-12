@@ -5,7 +5,6 @@
 #include <avr/power.h>
 
 #include "jay_sprites.h"
-#include "jay_horiz_sprites.h"
 
 class Jaylib: public Arduboy2Base {
     public:

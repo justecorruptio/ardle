@@ -1,5 +1,6 @@
 #include "jaylib.h"
 #include "utils.h"
+#include "jay_horiz_sprites.h"
 
 void Jaylib::drawBand(uint8_t x, uint8_t y, const uint8_t * sprite, uint8_t cols, uint8_t color) {
     uint16_t s;
