@@ -16,7 +16,7 @@ class Jaylib: public Arduboy2Base {
     void drawPixel(int16_t x, int16_t y, uint8_t color = WHITE);
     */
 
-    void drawLargeCharBand(int16_t x, int16_t y, uint8_t c, uint8_t l, uint8_t color=WHITE);
+    void drawLargeCharBand(int16_t x, int16_t y, uint16_t offset, uint8_t l, uint8_t color=WHITE);
 };
 
 #endif

@@ -52,6 +52,6 @@ void Jaylib::drawPixel(int16_t x, int16_t y, uint8_t color) {
 }
 */
 
-void Jaylib::drawLargeCharBand(int16_t x, int16_t y, uint8_t offset, uint8_t l, uint8_t color) {
+void Jaylib::drawLargeCharBand(int16_t x, int16_t y, uint16_t offset, uint8_t l, uint8_t color) {
     drawBand(127 - y, x, HORIZ_LARGE_CHARS + offset, l, color);
 }
