@@ -31,7 +31,7 @@ void Jaylib::smallPrint(uint8_t x, uint8_t y, const uint8_t * str) {
 void Jaylib::largePrint(uint8_t x, uint8_t y, const uint8_t * str, uint8_t color) {
     char c;
     for(;c = *str ++;) {
-        c -= 48;
+        c -= HORIZ_OFFSET;
         drawBand(128 - y - 7, x, HORIZ_LARGE_CHARS + 7 * c, 7, color);
         x += 6;
     }
@@ -47,4 +47,9 @@ void Jaylib::drawFastHLine(uint8_t x, uint8_t y, uint8_t w, uint8_t color) {
     uint8_t i;
     for(i = w; i --;)
         drawPixel(127 - y, x + i, color);
+}
+
+void Jaylib::drawPixel(int16_t x, int16_t y, uint8_t color) {
+    // Use the tip of the L to draw a dot.
+    drawBand(x, y, HORIZ_LARGE_CHARS + 7 * ('L' - HORIZ_OFFSET) + 1, 1, color);
 }

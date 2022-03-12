@@ -1,5 +1,7 @@
 #pragma once
 
+#define HORIZ_OFFSET 48
+
 PROGMEM const uint8_t HORIZ_LARGE_CHARS [] = {
 
     0x0e, 0x11, 0x13, 0x15, 0x19, 0x11, 0x0e, // 0

@@ -15,6 +15,8 @@ class Jaylib: public Arduboy2Base {
 
     void drawFastVLine(uint8_t x, uint8_t y, uint8_t h, uint8_t color = 1);
     void drawFastHLine(uint8_t x, uint8_t y, uint8_t w, uint8_t color = 1);
+
+    void drawPixel(int16_t x, int16_t y, uint8_t color = WHITE);
 };
 
 #endif
